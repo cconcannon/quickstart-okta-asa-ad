@@ -1,6 +1,9 @@
 
 === Launch into a new VPC
-include::okta-asa-main.adoc[]
+include::okta-asa-main.template.adoc[]
 
-=== Launch into an existing VPC
-include::okta-asa-target.adoc[]
+=== Launch an ASA bastion host into an existing VPC
+include::okta-asa-bastion.template.adoc[]
+
+=== Launch an ASA target into an existing VPC
+include::okta-asa-target.template.adoc[]
