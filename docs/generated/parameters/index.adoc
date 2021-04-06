@@ -1,9 +1,6 @@
 
-=== Launch into a new VPC
+=== Parameters for deploying Okta ASA into a new VPC
 include::okta-asa-main.template.adoc[]
 
-=== Launch an ASA bastion host into an existing VPC
+=== Parameters for deploying Okta ASA into an existing VPC
 include::okta-asa-bastion.template.adoc[]
-
-=== Launch an ASA target into an existing VPC
-include::okta-asa-target.template.adoc[]

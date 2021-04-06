@@ -797,33 +797,30 @@ p.footer-text a{color:#d7d8d8}
 <li><a href="#_planning_the_deployment">Planning the deployment</a>
 <ul class="sectlevel2">
 <li><a href="#_specialized_knowledge">Specialized knowledge</a></li>
-<li><a href="#_okta_and_okta_advanced_server_access_account">Okta and Okta Advanced Server Access account</a></li>
+<li><a href="#_okta_account">Okta account</a></li>
 <li><a href="#_aws_account">AWS account</a></li>
 <li><a href="#_technical_requirements">Technical requirements</a></li>
 </ul>
 </li>
 <li><a href="#_deployment_steps">Deployment steps</a>
 <ul class="sectlevel2">
-<li><a href="#_setup_okta_advanced_server_access">Setup Okta Advanced Server Access</a></li>
-<li><a href="#_sign_in_to_your_aws_account">Sign in to your AWS account</a></li>
+<li><a href="#_set_up_okta_asa">Set up Okta ASA</a></li>
+<li><a href="#_confirm_your_aws_account_configuration">Confirm your AWS account configuration</a></li>
 <li><a href="#_launch_the_quick_start">Launch the Quick Start</a></li>
-<li><a href="#_launch_an_asa_bastion_host_into_an_existing_vpc">Launch an ASA bastion host into an existing VPC</a></li>
-<li><a href="#_launch_an_asa_target_into_an_existing_vpc">Launch an ASA target into an existing VPC</a></li>
 </ul>
 </li>
 <li><a href="#_test_the_deployment">Test the deployment</a></li>
-<li><a href="#_best_practices_for_using_okta_advanced_server_access_on_aws">Best practices for using Okta Advanced Server Access on AWS</a>
-<ul class="sectlevel2">
-<li><a href="#_create_projects_for_each_environment">Create Projects For Each Environment</a></li>
-</ul>
-</li>
-<li><a href="#_security">Security</a>
-<ul class="sectlevel2">
-<li><a href="#_about_client_certificate_authentication">About Client Certificate Authentication</a></li>
-</ul>
-</li>
+<li><a href="#_add_target_hosts">Add target hosts</a></li>
+<li><a href="#_create_projects_for_each_environment_a_best_practice">Create projects for each environment: A best practice</a></li>
+<li><a href="#_security_client_certificate_authentication">Security: Client-certificate authentication</a></li>
 <li><a href="#_faq">FAQ</a></li>
-<li><a href="#_additional_resources">Additional Resources</a></li>
+<li><a href="#_okta_asa_documentation">Okta ASA documentation</a></li>
+<li><a href="#_parameter_reference">Parameter reference</a>
+<ul class="sectlevel2">
+<li><a href="#_parameters_for_deploying_okta_asa_into_a_new_vpc">Parameters for deploying Okta ASA into a new VPC</a></li>
+<li><a href="#_parameters_for_deploying_okta_asa_into_an_existing_vpc">Parameters for deploying Okta ASA into an existing VPC</a></li>
+</ul>
+</li>
 <li><a href="#_send_us_feedback">Send us feedback</a></li>
 <li><a href="#_quick_start_reference_deployments">Quick Start reference deployments</a></li>
 <li><a href="#_github_repository">GitHub repository</a></li>
@@ -842,8 +839,8 @@ p.footer-text a{color:#d7d8d8}
 </div>
 </div>
 <div class="paragraph text-center">
-<p><strong>January 2021</strong><br>
-<em>Ivan Dwyer, Frederico Hakamine, and Adam Arkom</em><br>
+<p><strong>April 2021</strong><br>
+<em>Ivan Dwyer, Frederico Hakamine, and Adam Arkon, Okta</em><br>
 <em>Dave May, AWS Quick Start team</em></p>
 </div>
 <div class="admonitionblock tip text-left">
@@ -868,10 +865,10 @@ report bugs, or submit feature ideas for this Quick Start.
 <h2 id="_overview">Overview</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>This Quick Start reference deployment guide provides step-by-step instructions for deploying Okta Advanced Server Access on the AWS Cloud.</p>
+<p>This guide provides instructions for deploying the <a href="https://www.okta.com/products/advanced-server-access/" target="_blank" rel="noopener">Okta Advanced Server Access</a> (Okta ASA) Quick Start reference architecture on the AWS Cloud.</p>
 </div>
 <div class="paragraph">
-<p>This Quick Start is for systems administrators who deploy and manage EC2 instances and would like to secure remote access and control local accounts &amp; permissions using Okta.</p>
+<p>This Quick Start is for systems administrators who deploy and manage Amazon Elastic Compute Cloud (Amazon EC2) instances. It helps you secure remote access and control local accounts and permissions using Okta software.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -891,7 +888,13 @@ Amazon may share user-deployment information with the AWS Partner that collabora
 <h2 id="_okta_advanced_server_access_on_aws">Okta Advanced Server Access on AWS</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Advanced Server Access provides an elegant mechanism to manage the lifecycle of local EC2 instance user &amp; group accounts, and their respective machine-level permissions directly sourced from the <a href="https://www.okta.com/products/">Okta Identity Cloud</a>. SSH &amp; RDP access to Linux &amp; Windows EC2 instances is authenticated and authorized through an Okta Single Sign-On workflow, with additional contextual Multifactor Authentication capabilities.</p>
+<p>After you deploy this Quick Start, access to EC2 instances is authenticated and authorized through an Okta single-sign-on workflow. This workflow, which can provide contextual multi-factor authentication, mitigates the risk of credential theft and misuse. It also reduces the need to wrap additional controls and management layers around secrets.</p>
+</div>
+<div class="paragraph">
+<p>Specifically, the Okta ASA Quick Start provides a mechanism for managing the lifecycle of local EC2-instance user and group accounts and their machine-level permissions. These things are sourced directly from the <a href="https://www.okta.com/products/" target="_blank" rel="noopener">Okta Identity Cloud</a>. When you use Okta ASA as your authentication mechanism to EC2 instances, you don&#8217;t rely on static credentials to log in. Instead, Okta uses a dynamic, ephemeral, one-time access token that ties directly to the user&#8217;s least-privileged access profile in the central Okta identity database.</p>
+</div>
+<div class="paragraph">
+<p>You can access Linux EC2 instances using Secure Shell (SSH) or Windows EC2 instances using Remote Desktop Protocol (RDP). By default, this Quick Start sets up SSH access to Linux EC2 instances. An EC2 security group is created with TCP port 22 traffic allowed from the bastion security group. If you want to use RDP and Windows, deploy an EC2 instance running Windows into one of the public subnets. Then, add the instance to the bastion security group, and update the target security group to allow port 3389 traffic from the bastion security group.</p>
 </div>
 </div>
 </div>
@@ -926,10 +929,10 @@ After you deploy the Quick Start, <a href="https://docs.aws.amazon.com/awsaccoun
 <h2 id="_software_licenses">Software licenses</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>This Quick Start requires a license for <a href="https://www.okta.com/products/advanced-server-access/">Okta Advanced Server Access</a>, which backed by the Okta Identity Cloud for user &amp; group management, account lifecycle management, Single Sign-On, and Multifactor Authentication.</p>
+<p>This Quick Start requires a license for <a href="https://www.okta.com/products/advanced-server-access/" target="_blank" rel="noopener">Okta Advanced Server Access</a>. This product is backed by the Okta Identity Cloud for user and group management, account-lifecycle management, single sign-on, and multi-factor authentication.</p>
 </div>
 <div class="paragraph">
-<p>To use the Quick Start in your production environment, sign up for Okta Advanced Server Access at: <a href="https://app.scaleft.com/p/signup" class="bare">https://app.scaleft.com/p/signup</a>. Follow the Getting Started instructions to create a new Advanced Server Access tenant backed by a new or existing Okta tenant. There is no license file required to deploy the software on the AWS Cloud.</p>
+<p>To use the Quick Start in your production environment, <a href="https://app.scaleft.com/p/signup" target="_blank" rel="noopener">sign up</a> for Okta ASA. Follow the "Getting Started" instructions to create an Okta ASA tenant backed by a new or existing Okta tenant. You don&#8217;t need a license file to deploy the software on the AWS Cloud.</p>
 </div>
 </div>
 </div>
@@ -937,13 +940,11 @@ After you deploy the Quick Start, <a href="https://docs.aws.amazon.com/awsaccoun
 <h2 id="_architecture">Architecture</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Deploying this Quick Start for a new virtual private cloud (VPC) with
-<strong>default parameters</strong> builds the following <em>Okta Advanced Server Access</em> environment in the
-AWS Cloud.</p>
+<p>Deploying this Quick Start for a new virtual private cloud (VPC) with default parameters builds the following Okta Advanced Server Access environment in the AWS Cloud.</p>
 </div>
 <div id="architecture1" class="imageblock">
 <div class="content">
-<a class="image" href="images/architecture_diagram.png"><img src="images/architecture_diagram.png" alt="Architecture" width="648" height="439"></a>
+<img src="images/okta-asa-architecture_diagram.png" alt="Architecture">
 </div>
 <div class="title">Figure 1. Quick Start architecture for <em>Okta Advanced Server Access</em> on AWS</div>
 </div>
@@ -958,33 +959,26 @@ AWS Cloud.</p>
 <li>
 <p>A VPC configured with public and private subnets, according to AWS best practices, to provide you with your own virtual network on AWS.*</p>
 </li>
-</ul>
-</div>
-<div class="paragraph">
+<li>
 <p>In the public subnets:</p>
-</div>
 <div class="ulist">
 <ul>
 <li>
 <p>Managed network address translation (NAT) gateways to allow outbound internet access for resources in the private subnets.*</p>
 </li>
 <li>
-<p>In the public subnets, a Linux bastion host in an Auto Scaling group to allow inbound Secure Shell (SSH) access to EC2 instances in public and private subnets. The Linux bastion hosts have the Okta Server Agent installed and share a configuration to act as the bastion host for SSH access to the EC2 instances in the public subnet.</p>
+<p>A Linux bastion host in an Auto Scaling group. This host has the Okta server agent installed. It shares a configuration to act as the bastion for SSH access to EC2 instances in the private subnets.</p>
 </li>
 </ul>
 </div>
-<div class="paragraph">
-<p>In the private subnets:</p>
-</div>
-<div class="ulist">
-<ul>
+</li>
 <li>
-<p>In the private subnets, a Linux EC2 instance with the Okta Server Agent installed, configured to only be accessible through the Linux bastion hosts in the public subnets.</p>
+<p>In the private subnets, a Linux EC2 instance (target host) in an Auto Scaling group. This target host has the Okta server agent installed and is configured to be accessible only through the Linux bastion host in the public subnet.*</p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p><strong>Note:</strong> The template that deploys the Quick Start into an existing VPC skips the components marked by asterisks and prompts you for your existing VPC configuration.</p>
+<p><span class="small">* The template that deploys the Quick Start into an existing VPC skips the components marked by asterisks and prompts you for your existing VPC configuration.</span></p>
 </div>
 </div>
 </div>
@@ -1000,13 +994,13 @@ and <a href="https://aws.amazon.com/training/" target="_blank" rel="noopener">AW
 deploy, and operate your infrastructure and applications on the AWS Cloud.</p>
 </div>
 <div class="paragraph">
-<p>This Quick Start also assumes familiarity with Okta, Linux account management, SSH access, and networking. If you’re new to Okta, visit the <a href="https://www.okta.com/">Okta website</a> and the <a href="https://help.okta.com/en/prod/Content/index.htm">Okta Product Documentation</a> for information about the Okta Identity Cloud.</p>
+<p>This Quick Start also assumes familiarity with Okta, Linux account management, SSH access, and networking. If you&#8217;re new to Okta, visit the <a href="https://www.okta.com/" target="_blank" rel="noopener">Okta website</a> and the <a href="https://help.okta.com/en/prod/Content/index.htm" target="_blank" rel="noopener">Okta product documentation</a> for information about the Okta Identity Cloud.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_okta_and_okta_advanced_server_access_account">Okta and Okta Advanced Server Access account</h3>
+<h3 id="_okta_account">Okta account</h3>
 <div class="paragraph">
-<p>In order to proceed with this Quick Start Guide, you must be an Okta Org Administrator. If you don’t already have an Okta account, <a href="https://www.okta.com/free-trial">sign up for a Free Trial</a>. Okta Advanced Server Access is an integrated application with an existing Okta Org. To create an Advanced Server Access Team visit <a href="https://app.scaleft.com/p/signup" class="bare">https://app.scaleft.com/p/signup</a> and follow the signup instructions.</p>
+<p>To use this Quick Start, you must be an Okta Org administrator. If you don&#8217;t already have an Okta account, <a href="https://www.okta.com/free-trial" target="_blank" rel="noopener">sign up for a free trial</a>. Okta Advanced Server Access is an integrated application with an existing Okta Org. To create an Okta ASA team, visit the <a href="https://app.scaleft.com/p/signup" target="_blank" rel="noopener">sign-up page</a>, and follow the instructions.</p>
 </div>
 </div>
 <div class="sect2">
@@ -1063,10 +1057,6 @@ deploy, and operate your infrastructure and applications on the AWS Cloud.</p>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">EC2 instances</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">S3 buckets</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
 </tr>
 </tbody>
 </table>
@@ -1167,7 +1157,7 @@ deploy, and operate your infrastructure and applications on the AWS Cloud.</p>
 </tbody>
 </table>
 <div class="paragraph">
-<p><strong>Amazon Linux, Centos and SUSE:</strong></p>
+<p><strong>Amazon Linux, Centos, and SUSE:</strong></p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
@@ -1192,7 +1182,7 @@ deploy, and operate your infrastructure and applications on the AWS Cloud.</p>
 </tbody>
 </table>
 <div class="paragraph">
-<p><strong>Amazon Linux, Centos and Ubuntu:</strong></p>
+<p><strong>Amazon Linux, Centos, and Ubuntu:</strong></p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
@@ -1213,7 +1203,7 @@ deploy, and operate your infrastructure and applications on the AWS Cloud.</p>
 </tbody>
 </table>
 <div class="paragraph">
-<p><strong>Amazon Linux and SUSE:</strong></p>
+<p><strong>Amazon Linux, and SUSE:</strong></p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
@@ -1273,15 +1263,15 @@ Certain Regions are available on an opt-in basis. For more information, see <a h
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Deploy Okta Advanced Server Access into a new VPC (end-to-end deployment)</strong>. This option builds a new AWS environment consisting of the VPC, subnets, NAT gateways, security groups, bastion hosts, and other infrastructure components. It then deploys Okta Advanced Server Access into this new VPC.</p>
+<p><strong>Deploy Okta Advanced Server Access into a new VPC</strong>. This option builds a new AWS environment consisting of the VPC, subnets, NAT gateways, security groups, bastion hosts, and a target host. It then deploys Okta ASA into this new VPC.</p>
 </li>
 <li>
-<p><strong>Deploy Okta Advanced Server Access into an existing VPC</strong>. This option provisions Okta Advanced Server Access in your existing AWS infrastructure.</p>
+<p><strong>Deploy Okta Advanced Server Access into an existing VPC</strong>. This option provisions an Okta ASA bastion host in your existing AWS infrastructure. You use this bastion host to provision Okta ASA on existing target hosts.</p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>The Quick Start provides separate templates for these options. It also lets you configure Classless Inter-Domain Routing (CIDR) blocks, instance types, and Okta Advanced Server Access settings, as discussed later in this guide.</p>
+<p>The Quick Start provides separate templates for these options. You can configure Classless Inter-Domain Routing (CIDR) blocks, instance types, and Okta ASA settings, as discussed later in this guide.</p>
 </div>
 </div>
 </div>
@@ -1291,50 +1281,50 @@ Certain Regions are available on an opt-in basis. For more information, see <a h
 <h2 id="_deployment_steps">Deployment steps</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_setup_okta_advanced_server_access">Setup Okta Advanced Server Access</h3>
+<h3 id="_set_up_okta_asa">Set up Okta ASA</h3>
 <div class="sect3">
-<h4 id="_sign_in_to_your_okta_advanced_server_access_team">Sign in to your Okta Advanced Server Access Team</h4>
+<h4 id="_sign_in_to_your_okta_asa_team">Sign in to your Okta ASA team</h4>
 <div class="paragraph">
-<p>Sign in to your Okta Advanced Server Access Team at <a href="https://app.scaleft.com" class="bare">https://app.scaleft.com</a> with your Okta credentials. If you do not have an Advanced Server Access Team, see Planning the deployment earlier in this guide for instructions on how to create a tenant.</p>
+<p>Sign in to your Okta ASA team at <a href="https://app.scaleft.com" class="bare">https://app.scaleft.com</a> with your Okta credentials. If you do not have an Okta ASA team, see <a href="#_planning_the_deployment">Planning the deployment</a> earlier in this guide for instructions on how to create a tenant.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_create_a_project">Create a Project</h4>
+<h4 id="_create_a_project">Create a project</h4>
 <div class="paragraph">
-<p>Create a new Advanced Server Access Project, which represents the authorization scope for a set of EC2 instances. Users and Groups are explicitly assigned to Projects, where role-based access and entitlements are specified. Okta manages and provisions accounts and entitlements to the downstream EC2 instances.</p>
+<p>Create an Okta ASA project, which represents the authorization scope for a set of EC2 instances. Users and groups are explicitly assigned to projects, where role-based access and entitlements are specified. Okta manages and provisions accounts and entitlements to the downstream EC2 instances.</p>
 </div>
 <div id="deploy1" class="imageblock">
 <div class="content">
-<a class="image" href="images/asa_create_project.png"><img src="images/asa_create_project.png" alt="Creating Project in Okta Advanced Server Access" width="648" height="439"></a>
+<a class="image" href="images/asa_create_project.png"><img src="images/asa_create_project.png" alt="Creating a project in Okta Advanced Server Access" width="75%"></a>
 </div>
 <div class="title">Figure 2. Creating a project in Okta Advanced Server Access</div>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_configure_instance_enrollment">Configure Instance Enrollment</h4>
+<h4 id="_configure_instance_enrollment">Configure instance enrollment</h4>
 <div class="paragraph">
-<p>In Okta Advanced Server Access, EC2 instances are enrolled with a specific Project via Enrollment Tokens or using Auto Enrollment. This quickstart supports server enrollment via enrollment tokens:</p>
+<p>In Okta ASA, EC2 instances are enrolled with a specific project using enrollment tokens or automatic enrollment. This Quick Start supports server enrollment using enrollment tokens.</p>
 </div>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>Go to the Project detail page, and select the <strong>Enrollment Tab</strong>.</p>
+<p>Go to the project detail page, and choose the <strong>Enrollment</strong> tab.</p>
 </li>
 <li>
-<p>Click <strong>Create Enrollment Token</strong></p>
+<p>Choose <strong>Create Enrollment Token</strong>.</p>
 </li>
 <li>
-<p>Give your Token a name, and click <strong>Submit</strong></p>
+<p>Name your token, and choose <strong>Submit</strong>.</p>
 </li>
 <li>
-<p>Copy the Token value in the next screen for future reference</p>
+<p>Copy the token value in the next screen for future reference.</p>
 </li>
 </ol>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_sign_in_to_your_aws_account">Sign in to your AWS account</h3>
+<h3 id="_confirm_your_aws_account_configuration">Confirm your AWS account configuration</h3>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -1348,45 +1338,6 @@ Certain Regions are available on an opt-in basis. For more information, see <a h
 </div>
 <div class="sect2">
 <h3 id="_launch_the_quick_start">Launch the Quick Start</h3>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-You are responsible for the cost of the AWS services used while running this Quick Start reference deployment. There is no additional cost for using this Quick Start. For full details, see the pricing pages for each AWS service used by this Quick Start. Prices are subject to change.
-</td>
-</tr>
-</table>
-</div>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Sign in to your AWS account, and choose one of the following options to launch the AWS CloudFormation template. For help with choosing an option, see <a href="#_deployment_options">deployment options</a> earlier in this guide.</p>
-</li>
-</ol>
-</div>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 60%;">
-<col style="width: 40%;">
-</colgroup>
-<tbody>
-<tr>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><a href="https://fwd.aws/yPvek" target="_blank" rel="noopener">Deploy Okta Advanced Server Access into a new VPC on AWS</a></p></td>
-<td class="tableblock halign-center valign-top"><div class="content"><div class="paragraph">
-<p><a href="=../../templates/okta-asa-master.template" target="_blank" rel="noopener">View template</a></p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><a href="https://fwd.aws/vBgjN" target="_blank" rel="noopener">Deploy Okta Advanced Server Access into an existing VPC on AWS</a></p></td>
-<td class="tableblock halign-center valign-top"><div class="content"><div class="paragraph">
-<p><a href="=../../templates/okta-asa-bastion.template" target="_blank" rel="noopener">View template</a></p>
-</div></div></td>
-</tr>
-</tbody>
-</table>
 <div class="admonitionblock warning">
 <table>
 <tr>
@@ -1394,48 +1345,224 @@ You are responsible for the cost of the AWS services used while running this Qui
 <i class="fa icon-warning" title="Warning"></i>
 </td>
 <td class="content">
-If you’re deploying Okta Advanced Server Access into an existing VPC, make sure that your VPC has two private subnets in different Availability Zones for the workload instances, and that the subnets aren’t shared. This Quick Start doesn’t support <a href="https://docs.aws.amazon.com/vpc/latest/userguide/vpc-sharing.html" target="_blank" rel="noopener">shared subnets</a>. These subnets require <a href="https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html" target="_blank" rel="noopener">NAT gateways</a> in their route tables, to allow the instances to download packages and software without exposing them to the internet.
+If you&#8217;re deploying Okta ASA into an existing VPC, make sure that your VPC has two private subnets in different Availability Zones for the workload instances and that the subnets aren&#8217;t shared. This Quick Start doesn&#8217;t support <a href="https://docs.aws.amazon.com/vpc/latest/userguide/vpc-sharing.html" target="_blank" rel="noopener">shared subnets</a>. These subnets require <a href="https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html" target="_blank" rel="noopener">NAT gateways</a> in their route tables to allow the instances to download packages and software without exposing them to the internet. Also make sure that the domain name option in the DHCP options is configured as explained in <a href="http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_DHCP_Options.html" target="_blank" rel="noopener">DHCP options sets</a>. You provide your VPC settings when you launch the Quick Start.
 </td>
 </tr>
 </table>
 </div>
 <div class="paragraph">
-<p>Also, make sure that the domain name option in the DHCP options is configured as explained in the <a href="http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_DHCP_Options.html" target="_blank" rel="noopener">Amazon VPC documentation</a>. You provide your VPC settings when you launch the Quick Start.</p>
-</div>
-<div class="paragraph">
 <p>Each deployment takes about 30 minutes to complete.</p>
 </div>
 <div class="olist arabic">
-<ol class="arabic" start="2">
+<ol class="arabic">
 <li>
-<p>Check the AWS Region that’s displayed in the upper-right corner of the navigation bar, and change it if necessary. This is where the network infrastructure for Okta Advanced Server Access will be built. The template is launched in the us-east-1 Region by default.</p>
+<p>Sign in to your AWS account, and choose one of the following options to launch the AWS CloudFormation template. For help with choosing an option, see <a href="#_deployment_options">Deployment options</a> earlier in this guide.</p>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 75%;">
+<col style="width: 25%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><a href="https://fwd.aws/aywQq" target="_blank" rel="noopener">Deploy Okta ASA into a new VPC on AWS</a></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><a href="https://fwd.aws/my7yy" target="_blank" rel="noopener">View template</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><a href="https://fwd.aws/G7D46" target="_blank" rel="noopener">Deploy Okta ASA into an existing VPC on AWS</a></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><a href="https://fwd.aws/bmXMa" target="_blank" rel="noopener">View template</a></p></td>
+</tr>
+</tbody>
+</table>
 </li>
-</ol>
-</div>
-<div class="olist arabic">
-<ol class="arabic" start="3">
+<li>
+<p>Check the AWS Region that&#8217;s displayed in the upper-right corner of the navigation bar, and change it if necessary. This is where the network infrastructure for Okta Advanced Server Access will be built. The template is launched in the us-east-1 Region by default. For other choices, see <a href="#_supported_regions">Supported Regions</a> earlier in this guide.</p>
+</li>
 <li>
 <p>On the <strong>Create stack</strong> page, keep the default setting for the template URL, and then choose <strong>Next</strong>.</p>
 </li>
 <li>
 <p>On the <strong>Specify stack details</strong> page, change the stack name if needed. Review the parameters for the template. Provide values for the parameters that require input. For all other parameters, review the default settings and customize them as necessary.</p>
 </li>
+<li>
+<p>On the <strong>Configure stack options</strong> page, you can <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-resource-tags.html" target="_blank" rel="noopener">specify tags</a> (key-value pairs) for resources in your stack and <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-add-tags.html" target="_blank" rel="noopener">set advanced options</a>. When you’re finished, choose <strong>Next</strong>.</p>
+</li>
+<li>
+<p>On the <strong>Review</strong> page, review and confirm the template settings. Under <strong>Capabilities</strong>, select the two check boxes to acknowledge that the template creates IAM resources and might require the ability to automatically expand macros.</p>
+</li>
+<li>
+<p>Choose <strong>Create stack</strong> to deploy the stack.</p>
+</li>
+<li>
+<p>Monitor the status of the stack. When the status is <strong>CREATE_COMPLETE</strong>, the Okta ASA deployment is ready.</p>
+</li>
+<li>
+<p>Use the values displayed in the <strong>Outputs</strong> tab for the stack, as shown in <a href="#cfn_outputs">Figure 3</a>, to view the created resources.</p>
+</li>
 </ol>
 </div>
+<div id="cfn_outputs" class="imageblock">
+<div class="content">
+<a class="image" href="images/cfn_outputs.png"><img src="images/cfn_outputs.png" alt="cfn_outputs" width="100%" height="100%"></a>
+</div>
+<div class="title">Figure 3. Okta ASA outputs after successful deployment</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_test_the_deployment">Test the deployment</h2>
+<div class="sectionbody">
 <div class="paragraph">
-<p>+
-In the following tables, parameters are listed by category and described separately for the deployment options. When you finish reviewing and customizing the parameters, choose <strong>Next</strong>.</p>
+<p>After the AWS CloudFormation stack is complete, you can test the deployment by checking whether the instances were properly enrolled with your Okta ASA project.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Visit the <a href="https://app.scaleft.com" target="_blank" rel="noopener">Okta Advanced Server Access dashboard</a>.</p>
+</li>
+<li>
+<p>Sign in to your team, and then choose the project that you created for this Quick Start.</p>
+</li>
+<li>
+<p>Choose the <strong>Servers</strong> tab. The bastion host and target host deployed in the stack  appear in the server inventory list. If they don&#8217;t, the enrollment process did not work. Confirm that the enrollment token was copied over in full as a stack parameter.</p>
+</li>
+<li>
+<p>Choose any target instance, and copy the value for <strong>Name</strong> from the detail view. Open your local terminal and run the following command, replacing the bracketed text with your hostname:</p>
+<div class="paragraph">
+<p><code>$ sft ssh &lt;hostname&gt;</code></p>
 </div>
 <div class="paragraph">
-<p>+
-NOTE: Unless you are customizing the Quick Start templates for your own deployment projects, keep the default settings for the parameters <strong>Quick Start S3 bucket name</strong>, <strong>Quick Start S3 bucket Region</strong>, and <strong>Quick Start S3 key prefix</strong>. Changing these settings automatically updates code references to point to a new Quick Start location. For more information, see the <a href="https://aws-quickstart.github.io/option1.html" target="_blank" rel="noopener">AWS Quick Start Contributor’s Guide</a>.</p>
+<p>If you receive an error while trying to log in, make sure that you completed all the prerequisite steps, that you have the client application installed, and that you have assigned your user account to the project that the servers belong to.</p>
+</div>
+</li>
+<li>
+<p>After the SSH connection is established, verify that the installation process was successful and that the server agent is running. To do this, run the following command:</p>
+<div class="paragraph">
+<p><code>$ ps -aux | grep sftd</code></p>
+</div>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_add_target_hosts">Add target hosts</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>After the Quick Start is deployed in your environment, you can use the template <a href="https://github.com/aws-quickstart/quickstart-okta-asa/blob/main/templates/okta-asa-target.template.yaml" target="_blank" rel="noopener">okta-asa-target.template.yaml</a> to deploy additional target-host Auto Scaling groups. To do this, upload the template to an S3 bucket, and use the S3 path in the CloudFormation console.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_create_projects_for_each_environment_a_best_practice">Create projects for each environment: A best practice</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Configuring projects is an exercise in organizational structure and permissions modeling. There are an infinite number of possible combinations. Considering that a server can belong to only one project, getting projects right early on is like laying a strong foundation for your house. The most effective way to determine project structure is to think in terms of environments.</p>
 </div>
 <div class="paragraph">
-<p>+
-=== Launch into a new VPC
-.Network configuration</p>
+<p>Balance coarse-grained and fine-grained environments. For example, a coarse-grained environment might be a single AWS Region, while a fine-grained environment might be EC2 instances tagged as <code>App1-Prod</code>. A balance helps you grant access to the right people in a clear manner without overburdening yourself as an administrator.</p>
 </div>
+<div class="paragraph">
+<p>When creating projects, also consider local account lifecycle management, a key feature of Okta ASA. This is especially important if you plan to deploy across existing (brownfield) server deployments. In these cases, the installed server agent creates and manages the local user and group accounts on the machine. Avoid performing this in a manner that could delete or reconfigure the existing local server accounts.</p>
+</div>
+<div class="paragraph">
+<p>When you create an Okta ASA project, you determine a starting point for user ID (UID) and group ID (GID). These numbers increment with every user that is explicitly added. The default starting point is 60001 for UID and 63001 for GID. This starting point is configurable at the project level (see <a href="https://help.okta.com/en/prod/Content/Topics/Adv_Server_Access/docs/set-project-level-attributes-in-adv-server-access.htm" target="_blank" rel="noopener">Set project-level user and group attributes in Advanced Server Access</a>). The default numbers are high to avoid potential conflicts with existing user accounts on the machine. If there&#8217;s a conflict, the server agent takes over management of the account. This takeover could break any existing local configurations or mounted file sharing.</p>
+</div>
+<div class="paragraph">
+<p>Before installing the server agent on servers with existing user accounts, perform a brief discovery exercise that outputs the existing accounts with their respective attributes, such as UID and GID. As an added benefit, this exercise inventories the existing credentials on the server, management of which you can reduce by using Okta ASA.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_security_client_certificate_authentication">Security: Client-certificate authentication</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Each Okta ASA project is associated with its own programmable certificate authority (CA). It&#8217;s not a traditional CA as you may be used to with web public key infrastructure. It mints certificates with as limited a scope and as short a time to live (TTL) as possible so there&#8217;s no need to maintain certificate-revocation lists (CRLs) or use the Online Certificate Status Protocol (OCSP).</p>
+</div>
+<div class="paragraph">
+<p>Each time a customer creates a project within a team, a new CA is spun up. The private key that backs the project CA is stored in AWS Key Management Service (AWS KMS), and an internal security policy is associated with it.</p>
+</div>
+<div class="paragraph">
+<p>When a server is enrolled with a project and the server agent is installed, the server is configured to trust client certificates signed by that project&#8217;s programmable CA. The project&#8217;s CA is what mints each client certificate upon the authentication and authorization of a request. The project uses OpenSSH certificates for Linux and X.509 certificates for Windows. The user and device info are injected as metadata with a TTL of three minutes. The three minutes account for clock drift on the target machines.</p>
+</div>
+<div class="paragraph">
+<p>The CA mints the client certificate and sends it to the client application. The client application then uses the certificate in memory to initiate a secure session with the target server. To limit the scope, the client uses only certificates of the Okta session plus device metadata, and the server accepts only client certificates signed by that project&#8217;s CA. Because each project has a role-based access control (RBAC) scope, a specific user would have access to the enrolled servers. When the certificate expires, it is rendered useless.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_faq">FAQ</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><strong>Q.</strong> I encountered a <strong>CREATE_FAILED</strong> error when I launched the Quick Start.</p>
+</div>
+<div class="paragraph">
+<p><strong>A.</strong> If AWS CloudFormation fails to create the stack, relaunch the template with <strong>Rollback on failure</strong> set to <strong>Disabled</strong>. This setting is under <strong>Advanced</strong> in the AWS CloudFormation console on the <strong>Configure stack options</strong> page. With this setting, the stack&#8217;s state is retained, and the instance keeps running so that you can troubleshoot the issue.</p>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+When you set <strong>Rollback on failure</strong> to <strong>Disabled</strong>, you continue to incur AWS charges for this stack. Delete the stack when you finish troubleshooting.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>For more information, see <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/troubleshooting.html" target="_blank" rel="noopener">Troubleshooting AWS CloudFormation</a>.</p>
+</div>
+<div class="paragraph">
+<p><strong>Q.</strong> I encountered a size-limitation error when I deployed the AWS CloudFormation templates.</p>
+</div>
+<div class="paragraph">
+<p><strong>A.</strong> Launch the Quick Start templates from the links in this guide or from another S3 bucket. If you deploy the templates from a local copy on your computer or from a location other than an S3 bucket, you might encounter template-size limitations. For more information, see <a href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cloudformation-limits.html" target="_blank" rel="noopener">AWS CloudFormation quotas</a>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_okta_asa_documentation">Okta ASA documentation</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://help.okta.com/en/prod/Content/Topics/Adv_Server_Access/docs/start-here.htm" target="_blank" rel="noopener">Advanced Server Access Setup</a></p>
+</li>
+<li>
+<p><a href="https://help.okta.com/en/prod/Content/Topics/Adv_Server_Access/docs/reference.htm" target="_blank" rel="noopener">Advanced Server Access Reference</a></p>
+</li>
+<li>
+<p><a href="https://help.okta.com/en/prod/Content/Topics/Adv_Server_Access/docs/sftd.htm" target="_blank" rel="noopener">Deploy an Advanced Server Access server</a></p>
+</li>
+<li>
+<p><a href="https://help.okta.com/en/prod/Content/Topics/Adv_Server_Access/docs/sft.htm" target="_blank" rel="noopener">Install the Advanced Server Access client</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_parameter_reference">Parameter reference</h2>
+<div class="sectionbody">
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Unless you are customizing the Quick Start templates for your own deployment projects, we recommend that you keep the default settings for the parameters labeled <code>Quick Start S3 bucket name</code>, <code>Quick Start S3 bucket
+Region</code>, and <code>Quick Start S3 key prefix</code>. Changing these parameter settings automatically updates code references to point to a new Quick Start location. For more information, see the <a href="https://aws-quickstart.github.io/option1.html" target="_blank" rel="noopener">AWS Quick Start Contributor’s Guide</a>.
+</td>
+</tr>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_parameters_for_deploying_okta_asa_into_a_new_vpc">Parameters for deploying Okta ASA into a new VPC</h3>
 <table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 1. Network configuration</caption>
 <colgroup>
 <col style="width: 16%;">
 <col style="width: 11%;">
@@ -1453,13 +1580,13 @@ NOTE: Unless you are customizing the Quick Start templates for your own deployme
 <td class="tableblock halign-left valign-top"><p class="tableblock">Availability Zones
 (<code>AvailabilityZones</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">List of Availability Zones to use for the subnets in the VPC. Note: ( The logical order is preserved and only 2 AZs are used for this deployment.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Availability Zones to use for the subnets in the VPC. The logical order is preserved. This deployment uses 2 Availability Zones.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">VPC CIDR
 (<code>VPCCIDR</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>10.0.0.0/16</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CIDR Block for the VPC.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CIDR block for the VPC.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Private subnet 1 CIDR
@@ -1477,30 +1604,30 @@ NOTE: Unless you are customizing the Quick Start templates for your own deployme
 <td class="tableblock halign-left valign-top"><p class="tableblock">Public subnet 1 CIDR
 (<code>PublicSubnet1CIDR</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>10.0.128.0/20</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CIDR Block for the public DMZ subnet 1 located in Availability Zone 1.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CIDR block for the public DMZ subnet 1 located in Availability Zone 1.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Public subnet 2 CIDR
 (<code>PublicSubnet2CIDR</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>10.0.144.0/20</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CIDR Block for the public DMZ subnet 2 located in Availability Zone 2.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CIDR block for the public DMZ subnet 2 located in Availability Zone 2.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Allowed bastion external access CIDR
 (<code>RemoteAccessCIDR</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Allowed CIDR block for external SSH access to the bastions</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Allowed CIDR block for external SSH access to the bastions.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">VPC tenancy
 (<code>VPCTenancy</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>default</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The allowed tenancy of instances launched into the VPC.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Allowed tenancy of instances launched into the VPC.</p></td>
 </tr>
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 1. Amazon EC2 configuration</caption>
+<caption class="title">Table 2. Amazon EC2 configuration</caption>
 <colgroup>
 <col style="width: 16%;">
 <col style="width: 11%;">
@@ -1518,13 +1645,13 @@ NOTE: Unless you are customizing the Quick Start templates for your own deployme
 <td class="tableblock halign-left valign-top"><p class="tableblock">Key pair name
 (<code>KeyPairName</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Name of an existing public/private key pair, which allows you to securely connect to your instance after it launches.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Name of an existing public/private key pair. You use this name to securely connect to your instance after it launches. If you do not have one in this AWS Region, create one before continuing.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Bastion AMI operating system
 (<code>EC2AMIOS</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>Amazon-Linux2-HVM</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The Linux distribution for the AMI to be used for the bastion instances.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Linux distribution for the AMI to be used for the bastion instances.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Bastion instance type
@@ -1535,7 +1662,7 @@ NOTE: Unless you are customizing the Quick Start templates for your own deployme
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 2. Linux bastion configuration</caption>
+<caption class="title">Table 3. Linux bastion configuration</caption>
 <colgroup>
 <col style="width: 16%;">
 <col style="width: 11%;">
@@ -1553,31 +1680,31 @@ NOTE: Unless you are customizing the Quick Start templates for your own deployme
 <td class="tableblock halign-left valign-top"><p class="tableblock">Number of bastion hosts
 (<code>NumEC2Hosts</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>1</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The number of bastion hosts to create. The maximum number is four.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Number of bastion hosts to create. The maximum number is 4.</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Bastion Host Name
+<td class="tableblock halign-left valign-top"><p class="tableblock">Bastion host name
 (<code>BastionHostName</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>LinuxBastion</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The value used for the name tag of the bastion host</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Value used for the name tag of the bastion host.</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Target Host Name
+<td class="tableblock halign-left valign-top"><p class="tableblock">Target host name
 (<code>TargetHostName</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>LinuxTarget</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The value used for the name tag of the target host</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Value used for the name tag of the target host.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Bastion tenancy
 (<code>EC2Tenancy</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>default</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">VPC tenancy to launch the bastion in. Options: 'dedicated' or 'default'</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">VPC tenancy to launch the bastion in. To change from "default," choose "dedicated."</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Bastion banner
 (<code>EnableBanner</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>false</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">To include a banner to be displayed when connecting via SSH to the bastion, choose true.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">To display a banner when connecting to the bastion using SSH, choose "true."</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Banner text
@@ -1589,18 +1716,18 @@ NOTE: Unless you are customizing the Quick Start templates for your own deployme
 <td class="tableblock halign-left valign-top"><p class="tableblock">TCP forwarding
 (<code>EnableTCPForwarding</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>true</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">To enable TCP forwarding, choose true.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">With TCP forwarding on a Linux bastion host, you can set up direct connections from outside of the VPC to services running in private subnets by routing the traffic through the bastion host. To disable TCP forwarding, choose "false."</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">X11 forwarding
 (<code>EnableX11Forwarding</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>true</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">To enable X11 forwarding, choose true.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">With X11 forwarding on a Linux bastion host, you can establish management connections to Linux instances using GUIs (as opposed to text-based SSH connections). To disable X11 forwarding, choose "false."</p></td>
 </tr>
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 3. AWS Quick Start configuration</caption>
+<caption class="title">Table 4. AWS Quick Start configuration</caption>
 <colgroup>
 <col style="width: 16%;">
 <col style="width: 11%;">
@@ -1618,16 +1745,16 @@ NOTE: Unless you are customizing the Quick Start templates for your own deployme
 <td class="tableblock halign-left valign-top"><p class="tableblock">Quick Start S3 bucket name
 (<code>QSS3BucketName</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>aws-quickstart</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">S3 bucket name for the Quick Start assets. Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Name of the S3 bucket for your copy of the Quick Start assets. Keep the default name unless you are customizing the template. Changing the name updates code references to point to a new Quick Start location. This name can include numbers, lowercase letters, uppercase letters, and hyphens, but do not start or end with a hyphen (-). See <a href="https://aws-quickstart.github.io/option1.html" class="bare">https://aws-quickstart.github.io/option1.html</a>.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Quick Start S3 key prefix
 (<code>QSS3KeyPrefix</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>quickstart-okta-asa/</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), dots (.) and forward slash (/) and it should end with a forward slash (/).</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">S3 key prefix that is used to simulate a directory for your copy of the Quick Start assets. Keep the default prefix unless you are customizing the template. Changing this prefix updates code references to point to a new Quick Start location. This prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slashes (/). End with a forward slash. See <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html" class="bare">https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html</a> and <a href="https://aws-quickstart.github.io/option1.html" class="bare">https://aws-quickstart.github.io/option1.html</a>.</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Quick Start S3 bucket region
+<td class="tableblock halign-left valign-top"><p class="tableblock">Quick Start S3 bucket Region
 (<code>QSS3BucketRegion</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>us-east-1</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. Keep the default Region unless you are customizing the template. Changing this Region updates code references to point to a new Quick Start location. When using your own bucket, specify the Region. See <a href="https://aws-quickstart.github.io/option1.html" class="bare">https://aws-quickstart.github.io/option1.html</a>.</p></td>
@@ -1635,7 +1762,7 @@ NOTE: Unless you are customizing the Quick Start templates for your own deployme
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 4. Okta Advanced Server Access Parameters</caption>
+<caption class="title">Table 5. Okta Advanced Server Access parameters</caption>
 <colgroup>
 <col style="width: 16%;">
 <col style="width: 11%;">
@@ -1650,18 +1777,18 @@ NOTE: Unless you are customizing the Quick Start templates for your own deployme
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Okta Advanced Server Access Enrollment Token
+<td class="tableblock halign-left valign-top"><p class="tableblock">Okta Advanced Server Access enrollment token
 (<code>EnrollmentToken</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Okta Advanced Server Access Enrollment Token</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Okta Advanced Server Access enrollment token.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
 <div class="sect2">
-<h3 id="_launch_an_asa_bastion_host_into_an_existing_vpc">Launch an ASA bastion host into an existing VPC</h3>
+<h3 id="_parameters_for_deploying_okta_asa_into_an_existing_vpc">Parameters for deploying Okta ASA into an existing VPC</h3>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 5. Network configuration</caption>
+<caption class="title">Table 6. Network configuration</caption>
 <colgroup>
 <col style="width: 16%;">
 <col style="width: 11%;">
@@ -1702,7 +1829,7 @@ NOTE: Unless you are customizing the Quick Start templates for your own deployme
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 6. Amazon EC2 configuration</caption>
+<caption class="title">Table 7. Amazon EC2 configuration</caption>
 <colgroup>
 <col style="width: 16%;">
 <col style="width: 11%;">
@@ -1720,13 +1847,13 @@ NOTE: Unless you are customizing the Quick Start templates for your own deployme
 <td class="tableblock halign-left valign-top"><p class="tableblock">Key pair name
 (<code>KeyPairName</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Name of an existing public/private key pair. If you do not have one in this AWS Region, please create it before continuing.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Name of an existing public/private key pair. You use this name to securely connect to your instance after it launches. If you do not have one in this AWS Region, create one before continuing.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Bastion AMI operating system
 (<code>EC2AMIOS</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>Amazon-Linux2-HVM</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The Linux distribution for the AMI to be used for the bastion instances.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Linux distribution for the AMI to be used for the bastion instances.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Bastion instance type
@@ -1738,12 +1865,12 @@ NOTE: Unless you are customizing the Quick Start templates for your own deployme
 <td class="tableblock halign-left valign-top"><p class="tableblock">Root volume size
 (<code>RootVolumeSize</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>10</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The size in GB for the root EBS volume.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Size in GB for the root EBS volume.</p></td>
 </tr>
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 7. Linux bastion configuration</caption>
+<caption class="title">Table 8. Linux bastion configuration</caption>
 <colgroup>
 <col style="width: 16%;">
 <col style="width: 11%;">
@@ -1761,25 +1888,25 @@ NOTE: Unless you are customizing the Quick Start templates for your own deployme
 <td class="tableblock halign-left valign-top"><p class="tableblock">Number of bastion hosts
 (<code>NumEC2Hosts</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>1</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The number of bastion hosts to create. The maximum number is four.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Number of bastion hosts to create. The maximum number is four.</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Bastion Host Name
+<td class="tableblock halign-left valign-top"><p class="tableblock">Bastion host name
 (<code>BastionHostName</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>LinuxBastion</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The value used for the name tag of the bastion host</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Value used for the name tag of the bastion host.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Bastion tenancy
 (<code>EC2Tenancy</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>default</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">VPC tenancy to launch the bastion in. Options: 'dedicated' or 'default'</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">VPC tenancy to launch the bastion in. To change from "default," choose "dedicated."</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Bastion banner
 (<code>EnableBanner</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>false</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">To include a banner to be displayed when connecting via SSH to the bastion, choose true.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">To display a banner when connecting to the bastion using SSH, choose "true."</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Banner text
@@ -1791,18 +1918,18 @@ NOTE: Unless you are customizing the Quick Start templates for your own deployme
 <td class="tableblock halign-left valign-top"><p class="tableblock">TCP forwarding
 (<code>EnableTCPForwarding</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>true</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">To enable TCP forwarding, choose true.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">With TCP forwarding on a Linux bastion host, you can set up direct connections from outside of the VPC to services running in private subnets by routing the traffic through the bastion host. To disable TCP forwarding, choose "false."</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">X11 forwarding
 (<code>EnableX11Forwarding</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>true</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">To enable X11 forwarding, choose true.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">With X11 forwarding on a Linux bastion host, you can establish management connections to Linux instances using GUIs (as opposed to text-based SSH connections). To disable X11 forwarding, choose "false."</p></td>
 </tr>
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 8. Alternative configurations</caption>
+<caption class="title">Table 9. Alternative configurations</caption>
 <colgroup>
 <col style="width: 16%;">
 <col style="width: 11%;">
@@ -1820,30 +1947,30 @@ NOTE: Unless you are customizing the Quick Start templates for your own deployme
 <td class="tableblock halign-left valign-top"><p class="tableblock">Alternative initialization script
 (<code>AlternativeInitializationScript</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Blank string</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">An alternative initialization script to run during setup.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Alternative initialization script to run during setup.</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Operating system override
+<td class="tableblock halign-left valign-top"><p class="tableblock">Operating-system image override
 (<code>OSImageOverride</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Blank string</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The Region-specific image to use for the instance.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Region-specific image to use for the instance.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Alternative IAM role
 (<code>AlternativeIAMRole</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Blank string</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">An existing IAM Role name to attach to the bastion. If left blank, a new role will be created.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Existing IAM role name to attach to the bastion. If kept blank, a new role will be created.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Environment variables
 (<code>EnvironmentVariables</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Blank string</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">A comma-separated list of environment variables for use in bootstrapping. Variables must be in the format KEY=VALUE. VALUE cannot contain commas.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Comma-separated list of environment variables for use in bootstrapping. Variables must be in the format KEY=VALUE. VALUE cannot contain commas.</p></td>
 </tr>
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 9. AWS Quick Start configuration</caption>
+<caption class="title">Table 10. AWS Quick Start configuration</caption>
 <colgroup>
 <col style="width: 16%;">
 <col style="width: 11%;">
@@ -1861,16 +1988,16 @@ NOTE: Unless you are customizing the Quick Start templates for your own deployme
 <td class="tableblock halign-left valign-top"><p class="tableblock">Quick Start S3 bucket name
 (<code>QSS3BucketName</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>aws-quickstart</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">S3 bucket name for the Quick Start assets. Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Name of the S3 bucket for your copy of the Quick Start assets. Keep the default name unless you are customizing the template. Changing the name updates code references to point to a new Quick Start location. This name can include numbers, lowercase letters, uppercase letters, and hyphens, but do not start or end with a hyphen (-). See <a href="https://aws-quickstart.github.io/option1.html" class="bare">https://aws-quickstart.github.io/option1.html</a>.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Quick Start S3 key prefix
 (<code>QSS3KeyPrefix</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>quickstart-okta-asa/</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), dots (.) and forward slash (/) and it should end with a forward slash (/).</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">S3 key prefix that is used to simulate a directory for your copy of the Quick Start assets. Keep the default prefix unless you are customizing the template. Changing this prefix updates code references to point to a new Quick Start location. This prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slashes (/). End with a forward slash. See <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html" class="bare">https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html</a> and <a href="https://aws-quickstart.github.io/option1.html" class="bare">https://aws-quickstart.github.io/option1.html</a>.</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Quick Start S3 bucket region
+<td class="tableblock halign-left valign-top"><p class="tableblock">Quick Start S3 bucket Region
 (<code>QSS3BucketRegion</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>us-east-1</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. Keep the default Region unless you are customizing the template. Changing this Region updates code references to point to a new Quick Start location. When using your own bucket, specify the Region. See <a href="https://aws-quickstart.github.io/option1.html" class="bare">https://aws-quickstart.github.io/option1.html</a>.</p></td>
@@ -1878,7 +2005,7 @@ NOTE: Unless you are customizing the Quick Start templates for your own deployme
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 10. Okta Advanced Server Access Parameters</caption>
+<caption class="title">Table 11. Okta Advanced Server Access parameters</caption>
 <colgroup>
 <col style="width: 16%;">
 <col style="width: 11%;">
@@ -1893,439 +2020,13 @@ NOTE: Unless you are customizing the Quick Start templates for your own deployme
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Okta Advanced Server Access Enrollment Token
+<td class="tableblock halign-left valign-top"><p class="tableblock">Okta Advanced Server Access enrollment token
 (<code>EnrollmentToken</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Okta Advanced Server Access Enrollment Token</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Okta Advanced Server Access enrollment token.</p></td>
 </tr>
 </tbody>
 </table>
-</div>
-<div class="sect2">
-<h3 id="_launch_an_asa_target_into_an_existing_vpc">Launch an ASA target into an existing VPC</h3>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 11. Network configuration</caption>
-<colgroup>
-<col style="width: 16%;">
-<col style="width: 11%;">
-<col style="width: 73%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Parameter label (name)</th>
-<th class="tableblock halign-left valign-top">Default value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">VPC ID
-(<code>VPCID</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ID of the VPC (e.g., vpc-0343606e).</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Private Subnet 2 ID
-(<code>PrivateSubnet2ID</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ID of the private subnet 2 in Availability Zone 2 (e.g., subnet-a0246dcd)</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Private Subnet 1 ID
-(<code>PrivateSubnet1ID</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ID of the private subnet 1 in Availability Zone 1 (e.g., subnet-a0246dcd)</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 12. Amazon EC2 configuration</caption>
-<colgroup>
-<col style="width: 16%;">
-<col style="width: 11%;">
-<col style="width: 73%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Parameter label (name)</th>
-<th class="tableblock halign-left valign-top">Default value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Key pair name
-(<code>KeyPairName</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Name of an existing public/private key pair. If you do not have one in this AWS Region, please create it before continuing.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">AMI operating system
-(<code>EC2AMIOS</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Amazon-Linux2-HVM</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The Linux distribution for the AMI to be used for the target instances.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Target instance type
-(<code>EC2InstanceType</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>t2.micro</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Amazon EC2 instance type for the target instances.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Root volume size
-(<code>RootVolumeSize</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>10</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The size in GB for the root EBS volume.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Bastion Security Group ID
-(<code>BastionSecurityGroupID</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ID of the bastion host security group to enable SSH connections (e.g., sg-7f16e910)</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 13. Linux target configuration</caption>
-<colgroup>
-<col style="width: 16%;">
-<col style="width: 11%;">
-<col style="width: 73%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Parameter label (name)</th>
-<th class="tableblock halign-left valign-top">Default value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Number of target hosts
-(<code>NumEC2Hosts</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>1</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The number of target hosts to create. The maximum number is four.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Bastion Host Name
-(<code>BastionHostName</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The value used for the name tag of the bastion host</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Target Host Name
-(<code>TargetHostName</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>LinuxTarget</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The value used for the name tag of the target host</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Target tenancy
-(<code>EC2Tenancy</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>default</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">VPC tenancy to launch the target in. Options: 'dedicated' or 'default'</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Enable banner
-(<code>EnableBanner</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>false</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">To include a banner to be displayed when connecting via SSH to the target, choose true.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Banner text
-(<code>EC2Banner</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Blank string</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Banner text to display upon login.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">TCP forwarding
-(<code>EnableTCPForwarding</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>true</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">To enable TCP forwarding, choose true.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">X11 forwarding
-(<code>EnableX11Forwarding</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>true</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">To enable X11 forwarding, choose true.</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 14. Alternative configurations</caption>
-<colgroup>
-<col style="width: 16%;">
-<col style="width: 11%;">
-<col style="width: 73%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Parameter label (name)</th>
-<th class="tableblock halign-left valign-top">Default value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Alternative initialization script
-(<code>AlternativeInitializationScript</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Blank string</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">An alternative initialization script to run during setup.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Operating system override
-(<code>OSImageOverride</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Blank string</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The Region-specific image to use for the instance.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Alternative IAM role
-(<code>AlternativeIAMRole</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Blank string</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">An existing IAM Role name to attach to the target. If left blank, a new role will be created.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Environment variables
-(<code>EnvironmentVariables</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Blank string</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">A comma-separated list of environment variables for use in bootstrapping. Variables must be in the format KEY=VALUE. VALUE cannot contain commas.</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 15. AWS Quick Start configuration</caption>
-<colgroup>
-<col style="width: 16%;">
-<col style="width: 11%;">
-<col style="width: 73%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Parameter label (name)</th>
-<th class="tableblock halign-left valign-top">Default value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Quick Start S3 bucket name
-(<code>QSS3BucketName</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>aws-quickstart</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">S3 bucket name for the Quick Start assets. Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Quick Start S3 key prefix
-(<code>QSS3KeyPrefix</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>quickstart-okta-asa/</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), dots (.) and forward slash (/) and it should end with a forward slash (/).</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Quick Start S3 bucket region
-(<code>QSS3BucketRegion</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>us-east-1</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. Keep the default Region unless you are customizing the template. Changing this Region updates code references to point to a new Quick Start location. When using your own bucket, specify the Region. See <a href="https://aws-quickstart.github.io/option1.html" class="bare">https://aws-quickstart.github.io/option1.html</a>.</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 16. Okta Advanced Server Access Parameters</caption>
-<colgroup>
-<col style="width: 16%;">
-<col style="width: 11%;">
-<col style="width: 73%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Parameter label (name)</th>
-<th class="tableblock halign-left valign-top">Default value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Okta Advanced Server Access Enrollment Token
-(<code>EnrollmentToken</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Okta Advanced Server Access Enrollment Token</p></td>
-</tr>
-</tbody>
-</table>
-<div class="paragraph">
-<p>+
-. On the <strong>Configure stack options</strong> page, you can <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-resource-tags.html" target="_blank" rel="noopener">specify tags</a> (key-value pairs) for resources in your stack and <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-add-tags.html" target="_blank" rel="noopener">set advanced options</a>. When you’re finished, choose <strong>Next</strong>.
-. On the <strong>Review</strong> page, review and confirm the template settings. Under <strong>Capabilities</strong>, select the two check boxes to acknowledge that the template creates IAM resources and might require the ability to automatically expand macros.
-. Choose <strong>Create stack</strong> to deploy the stack.
-. Monitor the status of the stack. When the status is <strong>CREATE_COMPLETE</strong>, the ASA deployment is ready.
-. Use the values displayed in the <strong>Outputs</strong> tab for the stack, as shown in <a href="#cfn_outputs">Figure 3</a>, to view the created resources.</p>
-</div>
-<div id="cfn_outputs" class="imageblock">
-<div class="content">
-<a class="image" href="images/cfn_outputs.png"><img src="images/cfn_outputs.png" alt="cfn_outputs" width="100%" height="100%"></a>
-</div>
-<div class="title">Figure 3. ASA outputs after successful deployment</div>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_test_the_deployment">Test the deployment</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>Once the Cloud Formation stack is complete, you can test the deployment by checking whether the instances were properly enrolled with your Advanced Server Access Project.</p>
-</div>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Visit the Advanced Server Access Dashboard at: <a href="https://app.scaleft.com" class="bare">https://app.scaleft.com</a></p>
-</li>
-<li>
-<p>Login to your Team, and then select the Project you created for this Quick Start Guide</p>
-</li>
-<li>
-<p>Select the <strong>Servers</strong> tab. The bastion host and target host deployed in the stack should appear in the list.</p>
-</li>
-</ol>
-</div>
-<div class="paragraph">
-<p><strong>Note</strong> If they do not show up in the Server inventory, that indicates that the enrollment process did not work. Doublecheck the Enrollment Token was copied over in full as a stack parameter.</p>
-</div>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Select any one of the target instances, and copy the value for Name from the detail view. Open your local terminal and run:</p>
-</li>
-</ol>
-</div>
-<div class="paragraph">
-<p><code>$ sft ssh &lt;hostname&gt;</code></p>
-</div>
-<div class="paragraph">
-<p><strong>Note</strong> If you receive an error trying to login, make sure that you completed all the prerequisite steps, have the Client Application installed, and have assigned your user account to the Project the Servers belong to.</p>
-</div>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Once the ssh connection is established, you can verify that the installation process was successful, and that the Server Agent is running, by running the command:</p>
-</li>
-</ol>
-</div>
-<div class="paragraph">
-<p><code>$ ps -aux | grep sftd</code></p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_best_practices_for_using_okta_advanced_server_access_on_aws">Best practices for using Okta Advanced Server Access on AWS</h2>
-<div class="sectionbody">
-<div class="sect2">
-<h3 id="_create_projects_for_each_environment">Create Projects For Each Environment</h3>
-<div class="paragraph">
-<p>Configuring Projects is an exercise in organizational structure and permissions modeling, as there is an infinite number of possible combinations. Considering that a Server can only belong to a single Project, getting Projects right early on is like laying a strong foundation for your house. In working with our customers over the years, we’ve found that the most effective method in determining Project structure is to think in terms of environments.</p>
-</div>
-<div class="paragraph">
-<p>The trick is to find the right balance of coarse-grained and fine-grained environments where you can effectively grant access to the right people in a clear manner, without over burdening you as an administrator.</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>A coarse-grained example of an environment might be a single region</p>
-</li>
-<li>
-<p>A fine-grained example of an environment might be EC2 instances tagged as App1-Prod</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p>When creating Projects, there are a few additional considerations to make, especially when you plan to deploy Advanced Server Access across existing brownfield server deployments. A key feature of ASA is local account lifecycle management, where the installed Server Agent creates and manages the local user and group accounts on the machine, however it is performed in a destructive manner than could impact your existing accounts and configurations.</p>
-</div>
-<div class="paragraph">
-<p>When you create a new ASA Project, you determine a starting point for UID and GID, which increment with every user that is explicitly added. The default starting point is 60001 and 63001 respectively, which is configurable at the Project level (see below). The high default number is meant to avoid any potential conflicts with existing user accounts on the box, however in the case of a conflict, the Server Agent will takeover management of the account, which could break any existing local configurations and/or mounted file sharing.</p>
-</div>
-<div class="paragraph">
-<p>Before installing the Server Agent on servers with existing user accounts, we recommend performing a brief discovery exercise that outputs the existing accounts with their respective attributes such as uid and gid. Another benefit of this exercise is to inventory the existing credentials on the server, which using ASA will enable you to eliminate.</p>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_security">Security</h2>
-<div class="sectionbody">
-<div class="sect2">
-<h3 id="_about_client_certificate_authentication">About Client Certificate Authentication</h3>
-<div class="paragraph">
-<p>A key outcome of leveraging Okta Advanced Server Access as your authentication mechanism to EC2 instances is no longer relying on static credentials to login. This greatly mitigates the risk of credential theft and misuse, and eliminates the need to wrap additional controls and management layers around secrets. With Okta, the credentials used to authenticate are ephemeral in the nature and use.</p>
-</div>
-<div class="paragraph">
-<p>The way it works is that each Advanced Server Access Project is associated with its own programmable Certificate Authority (“CA”). It’s not a traditional CA as you may be used to with web PKI, it is designed to mint certificates with as limited a scope and short a TTL as possible. Because of this, there’s no need to maintain revocation lists via OCSP/CRLs.</p>
-</div>
-<div class="paragraph">
-<p>Each time a customer creates a Project within their Team, a new CA is spun up. The private key that backs the Project CA is stored in AWS KMS, and we have an internal security policy associated with it. This policy is subject to compliance, and our procedures meet requirements.
-When a server is enrolled with a Project and the Server Agent installed, the server is configured to trust client certificates signed by that Project’s Programmable CA.</p>
-</div>
-<div class="paragraph">
-<p>The Project’s CA is what mints each client certificate upon the authentication and authorization of a request. OpenSSH certificates for Linux, and X.509 certificates for Windows. The user and device are injected as metadata, with a TTL of 3 minutes. The 3 minutes is to account for clock drift on the target machines.</p>
-</div>
-<div class="paragraph">
-<p>The CA mints the client certificate and sends to the Client Application, which uses the certificate in-memory to initiate a secure session with the target server. The way we limit the scope is the Client will only use certificates of the strongly authenticated Okta session plus device metadata, and the server will only accept client certificates signed by that Project’s CA. Because each Project is an RBAC scope, a specific user would have access to the enrolled servers. Once the certificate expires, it is rendered completely useless.</p>
-</div>
-<div class="paragraph">
-<p>The attack surface is then limited to a full machine takeover, with a strongly authenticated Okta session bound to the Client, where the Client was still enrolled with the Team. In this case, the user could still be authenticated and authorized to receive freshly minted certificates for additional servers. Upon expiration of the Okta session, or if the Client is revoked or unenrolled, that attack surface is closed.</p>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_faq">FAQ</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p><strong>Q.</strong> I encountered a <strong>CREATE_FAILED</strong> error when I launched the Quick Start.</p>
-</div>
-<div class="paragraph">
-<p><strong>A.</strong> If AWS CloudFormation fails to create the stack, we recommend that you relaunch the template with <strong>Rollback on failure</strong> set to <strong>No</strong>. (This setting is under <strong>Advanced</strong> in the AWS CloudFormation console, <strong>Options</strong> page.) With this setting, the stack’s state is retained and the instance is left running, so you can troubleshoot the issue.</p>
-</div>
-<div class="admonitionblock warning">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-warning" title="Warning"></i>
-</td>
-<td class="content">
-When you set <strong>Rollback on failure</strong> to <strong>Disabled</strong>, you continue to incur AWS charges for this stack. Please make sure to delete the stack when you finish troubleshooting.
-</td>
-</tr>
-</table>
-</div>
-<div class="paragraph">
-<p>For additional information, see <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/troubleshooting.html" target="_blank" rel="noopener">Troubleshooting AWS CloudFormation</a> on the AWS website.</p>
-</div>
-<div class="paragraph">
-<p><strong>Q.</strong> I encountered a size limitation error when I deployed the AWS CloudFormation templates.</p>
-</div>
-<div class="paragraph">
-<p><strong>A.</strong> We recommend that you launch the Quick Start templates from the links in this guide or from another S3 bucket. If you deploy the templates from a local copy on your computer or from a location other than an S3 bucket, you might encounter template size limitations. For more information about AWS CloudFormation quotas, see the <a href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cloudformation-limits.html" target="_blank" rel="noopener">AWS documentation</a>.</p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_additional_resources">Additional Resources</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>Okta Advanced Server Access documentation:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><a href="https://help.okta.com/en/prod/Content/Topics/Adv_Server_Access/docs/setup/introduction.htm">Advanced Server Access Setup</a></p>
-</li>
-<li>
-<p><a href="https://help.okta.com/en/prod/Content/Topics/Adv_Server_Access/docs/concepts.htm">Advanced Server Access Reference</a></p>
-</li>
-<li>
-<p><a href="https://help.okta.com/en/prod/Content/Topics/Adv_Server_Access/docs/sftd.htm">Advanced Server Access Server Enrollment</a></p>
-</li>
-<li>
-<p><a href="https://help.okta.com/en/prod/Content/Topics/Adv_Server_Access/docs/sft.htm">Advanced Server Access Client Application</a></p>
-</li>
-</ul>
 </div>
 </div>
 </div>
@@ -2377,9 +2078,9 @@ and to share your customizations with others.</p>
 </html>
 <!--
 repo commit:
-57da4483d5f3833c932108115b02c181caa9cfd6
+80a588599f75a626e54d2e830a1e57ffc388342f
 
 submodule config:
- d15f338e5c2b27efea5af124e7da7d589e0bee78 docs/boilerplate (heads/main)
+ 043db710e71444c3b66cdcc02d8b2b7c1aed26e0 docs/boilerplate (heads/main)
  53fbedf058adaea101a587ec0fa9d84cb2a05587 submodules/quickstart-aws-vpc (v1.0-56-g53fbedf)
 -->
